@@ -44,7 +44,7 @@ public class commonConsumer {
                     final Long value = record.value();
                     final long offset = record.offset();
                     final int partition = record.partition();
-                    System.out.printf("key = %s, value = %s%n, partition = %s, offset = %s \n", key, value, partition, offset);
+                    System.out.printf("key = %s, value = %s, partition = %s, offset = %s \n", key, value, partition, offset);
                 }
             }
 
