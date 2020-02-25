@@ -4,6 +4,7 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.apache.log4j.BasicConfigurator;
 
+import java.time.Duration;
 import java.util.Properties;
 
 public class idempotentProducer {
@@ -41,11 +42,11 @@ public class idempotentProducer {
             // Start a finite loop, you normally will want this to be a break-bound while loop
             // However, this is a testing loop
 
-
             // Initialize transaction
             producer.beginTransaction();
 
             for (long i = 0; i < 3000; i++) {
+
                 //Std generation of fake key and value
                 final String orderId = Long.toString(i);
                 final String payment = Integer.toString(orderId.hashCode());
@@ -55,22 +56,25 @@ public class idempotentProducer {
 
                 //Sending records and displaying metadata with a non-blocking callback
                 //This allows to log/action on callbacks without a synchronous request
-                producer.send(record, ((recordMetadata, e) -> {
+                /*producer.send(record, ((recordMetadata, e) -> {
                     System.out.println("Record was sent to topic " +
                             recordMetadata.topic() + " with offset " + recordMetadata.offset() + " in partition " + recordMetadata.partition());
-                }));
+                }));*/
+                producer.send(record);
             }
 
             // Close transaction after production of this epoch of messages
             producer.commitTransaction();
-
         }
         catch (Exception ex){
             ex.printStackTrace();
+            producer.abortTransaction();
+            producer.close(Duration.ofMillis(1000));
         }
 
         //Tell producer to flush before exiting
-        producer.flush();
+        // No need to call producer.flush() as transactional producers assure flushing of uncommitted messages.
+        producer.close(Duration.ofMillis(1000));
         System.out.printf("Successfully produced messages to a topic called %s%n", TOPIC);
 
         //Shutdown hook to assure producer close
