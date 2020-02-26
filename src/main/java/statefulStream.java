@@ -16,7 +16,7 @@ import java.util.Properties;
 
 public class statefulStream {
 
-    private static String TOPIC = "TestingTopic";
+    private static String TOPIC = "statefulTopic";
     private static String OUTPUT_TOPIC = "StreamEnd";
     private static String STORE = "InternalStore";
 
