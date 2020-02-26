@@ -9,7 +9,7 @@ import java.util.Properties;
 
 public class idempotentProducer {
 
-    private static final String TOPIC = "idempotentTopic";
+    private static final String TOPIC = "idempotentSingleTopic";
 
     public static Properties getConfig (){
         final Properties props = new Properties();
@@ -45,7 +45,7 @@ public class idempotentProducer {
             // Initialize transaction
             producer.beginTransaction();
 
-            for (long i = 0; i < 3000; i++) {
+            for (long i = 0; i < 30; i++) {
 
                 //Std generation of fake key and value
                 final String orderId = Long.toString(i);
