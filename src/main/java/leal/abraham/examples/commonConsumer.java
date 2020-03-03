@@ -59,5 +59,8 @@ public class commonConsumer {
         catch (Exception e){
             e.printStackTrace();
         }
+
+        //Shutdown hook to assure final processing and graceful shutdown when SIGTERM is received
+        Runtime.getRuntime().addShutdownHook(new Thread(consumer::close));
     }
 }

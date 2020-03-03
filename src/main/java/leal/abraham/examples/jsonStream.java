@@ -4,21 +4,15 @@ import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.StreamsConfig;
-import org.apache.kafka.streams.errors.DeserializationExceptionHandler;
 import org.apache.kafka.streams.errors.LogAndContinueExceptionHandler;
 import org.apache.kafka.streams.kstream.KStream;
-import org.apache.kafka.streams.kstream.KTable;
 import org.apache.kafka.streams.kstream.Printed;
-import org.apache.kafka.streams.state.KeyValueStore;
-import org.apache.kafka.streams.state.StoreBuilder;
-import org.apache.kafka.streams.state.Stores;
-import org.apache.kafka.streams.state.StreamsMetadata;
 import org.apache.log4j.BasicConfigurator;
 
 import java.util.Arrays;
 import java.util.Properties;
 
-public class idempotentStream {
+public class jsonStream {
 
     private static String TOPIC = "idempotentSingleTopic";
     private static String OUTPUT_TOPIC = "StreamEnd";
@@ -28,10 +22,9 @@ public class idempotentStream {
         final Properties streamsProps = new Properties();
         streamsProps.put(StreamsConfig.APPLICATION_ID_CONFIG, "leal.abraham.examples.idempotentStream");
         streamsProps.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
-        streamsProps.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.Integer().getClass());
+        streamsProps.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass());
         streamsProps.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.String().getClass());
         streamsProps.put(StreamsConfig.DEFAULT_DESERIALIZATION_EXCEPTION_HANDLER_CLASS_CONFIG, LogAndContinueExceptionHandler.class);
-        streamsProps.put(StreamsConfig.PROCESSING_GUARANTEE_CONFIG,"exactly_once");
 
         return streamsProps;
     }

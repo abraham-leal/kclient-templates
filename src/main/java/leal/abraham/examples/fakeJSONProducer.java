@@ -1,18 +1,19 @@
 package leal.abraham.examples;
 
+import org.apache.avro.data.Json;
+import org.apache.hadoop.util.hash.Hash;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.common.serialization.StringSerializer;
-import org.apache.kafka.streams.StreamsConfig;
 import org.apache.log4j.BasicConfigurator;
 
-import java.util.Properties;
+import java.util.*;
 
-public class commonProducer {
+public class fakeJSONProducer {
 
-    private static final String TOPIC = "TestingTopic";
+    private static final String TOPIC = "jsonTopic";
+    private static final int recordsToGenerate = 100;
 
     public static Properties getConfig (){
         final Properties props = new Properties();
@@ -26,12 +27,6 @@ public class commonProducer {
         props.put(ProducerConfig.LINGER_MS_CONFIG, 1);
         props.put(ProducerConfig.COMPRESSION_TYPE_CONFIG, "gzip");
 
-        // Properties for auth-enabled cluster, SASL PLAIN
-
-        props.put("sasl.jaas.config", "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"test\" password=\"test123\";");
-        props.put("sasl.mechanism", "PLAIN");
-        props.put("security.protocol", "SASL_PLAINTEXT");
-
         return props;
     }
 
@@ -41,17 +36,18 @@ public class commonProducer {
         //Start producer with configurations
         KafkaProducer<String, String> producer = new KafkaProducer<String, String>(getConfig());
 
+        //get random key and values
+        HashMap<String, String> payload = generateRandomJSON(getRandomCustomerIDs(recordsToGenerate));
+
         try {
 
             // Start a finite loop, you normally will want this to be a break-bound while loop
             // However, this is a testing loop
-            for (long i = 0; i < 3000; i++) {
-                //Std generation of fake key and value
-                final String orderId = Long.toString(i);
-                final String payment = Integer.toString(orderId.hashCode());
+            // Lambda will iterate through the generated hashmap
+            payload.forEach((k, v) ->  {
 
                 // Generating record without header
-                final ProducerRecord<String, String> record = new ProducerRecord<String, String>(TOPIC, orderId, payment);
+                final ProducerRecord<String, String> record = new ProducerRecord<String, String>(TOPIC, k, v);
 
                 //Sending records and displaying metadata with a non-blocking callback
                 //This allows to log/action on callbacks without a synchronous request
@@ -59,7 +55,7 @@ public class commonProducer {
                     System.out.println("Record was sent to topic " +
                             recordMetadata.topic() + " with offset " + recordMetadata.offset() + " in partition " + recordMetadata.partition());
                 }));
-            }
+            });
 
         }
         catch (Exception ex){
@@ -74,5 +70,34 @@ public class commonProducer {
         Runtime.getRuntime().addShutdownHook(new Thread(producer::close));
 
     }
+
+    public static ArrayList<String> getRandomCustomerIDs (int numberOfIDsDesired){
+        ArrayList<String> custID = new ArrayList<String>();
+        for (int i = 0; i < numberOfIDsDesired; i++){
+            custID.add(UUID.randomUUID().toString());
+        }
+        return custID;
+    }
+
+    public static HashMap<String, String> generateRandomJSON (ArrayList<String> UUIDs){
+        HashMap<String,String> ListOfCostumers = new HashMap<String, String>();
+        String[] names = {"John", "Marcus", "Susan", "Henry", "Abraham", "Valeria", "Sven", "Christoph", "Scott", "Jay", "Laurent"
+        , "Genesis", "Jane", "Ava", "Paul", "Madeline"};
+        String[] countries ={"United States", "Mexico", "Canada", "Peru", "Nicaragua", "Argentina", "Brazil", "London"
+        , "Scotland", "France", "Spain", "Portugal", "Germany"};
+        for (String id : UUIDs){
+            String customerName = names[new Random().nextInt(names.length)];
+            String country = countries[new Random().nextInt(countries.length)];
+            String subscriptionAmount = Integer.toString(new Random().nextInt(10000000));
+
+            String JSONpayload = "{" + "\"customer\" : \"" + customerName + "\" , \"country\" : \"" + country + "\" , \"subscription\" : \""
+                    + subscriptionAmount + "\" }";
+
+            ListOfCostumers.put(id, JSONpayload);
+        }
+
+        return ListOfCostumers;
+    }
+
 
 }

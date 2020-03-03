@@ -21,8 +21,8 @@ public class idempotentProducer {
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         props.put(ProducerConfig.CLIENT_ID_CONFIG, "TestingProducer");
-        props.put(ProducerConfig.BATCH_SIZE_CONFIG, 100);
-        props.put(ProducerConfig.LINGER_MS_CONFIG, 500);
+        props.put(ProducerConfig.BATCH_SIZE_CONFIG, 65536);
+        props.put(ProducerConfig.LINGER_MS_CONFIG, 1);
         props.put(ProducerConfig.COMPRESSION_TYPE_CONFIG, "gzip");
         props.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG,"TRUE");
         props.put(ProducerConfig.TRANSACTIONAL_ID_CONFIG, "01ProducerTransact");
