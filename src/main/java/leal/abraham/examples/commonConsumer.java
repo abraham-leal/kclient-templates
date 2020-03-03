@@ -1,3 +1,4 @@
+package leal.abraham.examples;
 
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -15,7 +16,7 @@ import java.util.Properties;
 
 public class commonConsumer {
 
-    private static final String TOPIC = "StreamEnd";
+    private static final String TOPIC = "TestingTopic";
 
     public static Properties getConfig (){
         final Properties props = new Properties();
@@ -24,7 +25,13 @@ public class commonConsumer {
         props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "true");
         props.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG, "1000");
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, LongDeserializer.class);
+        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+
+        // Properties for auth-enabled cluster, SASL PLAIN
+
+        props.put("sasl.jaas.config", "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"test\" password=\"test123\";");
+        props.put("sasl.mechanism", "PLAIN");
+        props.put("security.protocol", "SASL_PLAINTEXT");
 
         return props;
     }
@@ -32,16 +39,16 @@ public class commonConsumer {
     public static void main(final String[] args) {
         BasicConfigurator.configure();
 
-        final KafkaConsumer<String, Long> consumer = new KafkaConsumer<String,Long>(getConfig());
+        final KafkaConsumer<String, String> consumer = new KafkaConsumer<String,String>(getConfig());
         consumer.subscribe(Collections.singletonList(TOPIC));
 
         try {
 
             while (true) {
-                ConsumerRecords<String, Long> records = consumer.poll(100);
-                for (final ConsumerRecord<String, Long> record : records) {
+                ConsumerRecords<String, String> records = consumer.poll(100);
+                for (final ConsumerRecord<String, String> record : records) {
                     final String key = record.key();
-                    final Long value = record.value();
+                    final String value = record.value();
                     final long offset = record.offset();
                     final int partition = record.partition();
                     System.out.printf("key = %s, value = %s, partition = %s, offset = %s \n", key, value, partition, offset);

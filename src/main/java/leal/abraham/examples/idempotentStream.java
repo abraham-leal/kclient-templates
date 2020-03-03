@@ -1,3 +1,5 @@
+package leal.abraham.examples;
+
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.StreamsBuilder;
@@ -24,7 +26,7 @@ public class idempotentStream {
 
     public static Properties getConfig (){
         final Properties streamsProps = new Properties();
-        streamsProps.put(StreamsConfig.APPLICATION_ID_CONFIG, "idempotentStream");
+        streamsProps.put(StreamsConfig.APPLICATION_ID_CONFIG, "leal.abraham.examples.idempotentStream");
         streamsProps.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
         streamsProps.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.Integer().getClass());
         streamsProps.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.String().getClass());
