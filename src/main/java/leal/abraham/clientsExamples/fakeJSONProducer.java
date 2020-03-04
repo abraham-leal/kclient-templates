@@ -1,7 +1,5 @@
-package leal.abraham.examples;
+package leal.abraham.clientsExamples;
 
-import org.apache.avro.data.Json;
-import org.apache.hadoop.util.hash.Hash;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -12,8 +10,8 @@ import java.util.*;
 
 public class fakeJSONProducer {
 
-    private static final String TOPIC = "jsonTopic";
-    private static final int recordsToGenerate = 100;
+    private static final String TOPIC = "fakeJSONdata";
+    private static final int recordsToGenerate = 1000;
 
     public static Properties getConfig (){
         final Properties props = new Properties();
@@ -51,10 +49,14 @@ public class fakeJSONProducer {
 
                 //Sending records and displaying metadata with a non-blocking callback
                 //This allows to log/action on callbacks without a synchronous request
-                producer.send(record, ((recordMetadata, e) -> {
-                    System.out.println("Record was sent to topic " +
-                            recordMetadata.topic() + " with offset " + recordMetadata.offset() + " in partition " + recordMetadata.partition());
-                }));
+                producer.send(record);
+
+                final ProducerRecord<String, String> record2 = new ProducerRecord<String, String>("fakeJSONref", k, Integer.toString(new Random().nextInt(100000000)));
+
+                //Sending records and displaying metadata with a non-blocking callback
+                //This allows to log/action on callbacks without a synchronous request
+                producer.send(record2);
+
             });
 
         }

@@ -1,26 +1,28 @@
-package leal.abraham.examples;
+package leal.abraham.SampleStreamsProcessors;
 
+import leal.abraham.SampleStreamsProcessors.hashCustInfo;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.KafkaStreams;
+import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.StreamsConfig;
 import org.apache.kafka.streams.errors.LogAndContinueExceptionHandler;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.Printed;
+import org.apache.kafka.streams.kstream.Transformer;
+import org.apache.kafka.streams.kstream.TransformerSupplier;
 import org.apache.log4j.BasicConfigurator;
 
-import java.util.Arrays;
 import java.util.Properties;
 
-public class jsonStream {
+public class ProcessorAPIStream {
 
-    private static String TOPIC = "idempotentSingleTopic";
-    private static String OUTPUT_TOPIC = "StreamEnd";
+    private static String TOPIC = "fakeJSONdata";
 
 
     public static Properties getConfig (){
         final Properties streamsProps = new Properties();
-        streamsProps.put(StreamsConfig.APPLICATION_ID_CONFIG, "leal.abraham.examples.idempotentStream");
+        streamsProps.put(StreamsConfig.APPLICATION_ID_CONFIG, "leal.abraham.examples.processorStream2");
         streamsProps.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
         streamsProps.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass());
         streamsProps.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.String().getClass());
@@ -37,12 +39,7 @@ public class jsonStream {
         // No need to specify Serdes as builder will get the default set in properties
         final KStream<String, String> input = builder.stream(TOPIC);
 
-        //Build topology
-        final KStream<String, String> evaulateRecord = input.flatMapValues(value -> Arrays.asList(value.split("\\s+")));
-
-        evaulateRecord.print(Printed.toSysOut());
-
-        evaulateRecord.to(OUTPUT_TOPIC);
+        input.transform(hashCustInfo::new).print(Printed.toSysOut());
 
         final KafkaStreams streams = new KafkaStreams(builder.build(), getConfig());
 

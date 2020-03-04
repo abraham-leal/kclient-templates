@@ -1,18 +1,17 @@
-package leal.abraham.examples;
+package leal.abraham.clientsExamples;
 
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.common.serialization.StringSerializer;
-import org.apache.kafka.streams.StreamsConfig;
 import org.apache.log4j.BasicConfigurator;
 
+import java.time.Duration;
 import java.util.Properties;
 
-public class commonProducer {
+public class idempotentProducer {
 
-    private static final String TOPIC = "TestingTopic";
+    private static final String TOPIC = "idempotentSingleTopic";
 
     public static Properties getConfig (){
         final Properties props = new Properties();
@@ -25,12 +24,8 @@ public class commonProducer {
         props.put(ProducerConfig.BATCH_SIZE_CONFIG, 65536);
         props.put(ProducerConfig.LINGER_MS_CONFIG, 1);
         props.put(ProducerConfig.COMPRESSION_TYPE_CONFIG, "gzip");
-
-        // Properties for auth-enabled cluster, SASL PLAIN
-
-        props.put("sasl.jaas.config", "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"test\" password=\"test123\";");
-        props.put("sasl.mechanism", "PLAIN");
-        props.put("security.protocol", "SASL_PLAINTEXT");
+        props.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG,"TRUE");
+        props.put(ProducerConfig.TRANSACTIONAL_ID_CONFIG, "01ProducerTransact");
 
         return props;
     }
@@ -41,11 +36,19 @@ public class commonProducer {
         //Start producer with configurations
         KafkaProducer<String, String> producer = new KafkaProducer<String, String>(getConfig());
 
+        //Initialize transactional producer
+        producer.initTransactions();
+
         try {
 
             // Start a finite loop, you normally will want this to be a break-bound while loop
             // However, this is a testing loop
-            for (long i = 0; i < 3000; i++) {
+
+            // Initialize transaction
+            producer.beginTransaction();
+
+            for (long i = 0; i < 30; i++) {
+
                 //Std generation of fake key and value
                 final String orderId = Long.toString(i);
                 final String payment = Integer.toString(orderId.hashCode());
@@ -55,19 +58,25 @@ public class commonProducer {
 
                 //Sending records and displaying metadata with a non-blocking callback
                 //This allows to log/action on callbacks without a synchronous request
-                producer.send(record, ((recordMetadata, e) -> {
+                /*producer.send(record, ((recordMetadata, e) -> {
                     System.out.println("Record was sent to topic " +
                             recordMetadata.topic() + " with offset " + recordMetadata.offset() + " in partition " + recordMetadata.partition());
-                }));
+                }));*/
+                producer.send(record);
             }
 
+            // Close transaction after production of this epoch of messages
+            producer.commitTransaction();
         }
         catch (Exception ex){
             ex.printStackTrace();
+            producer.abortTransaction();
+            producer.close(Duration.ofMillis(1000));
         }
 
         //Tell producer to flush before exiting
-        producer.flush();
+        // No need to call producer.flush() as transactional producers assure flushing of uncommitted messages.
+        producer.close(Duration.ofMillis(1000));
         System.out.printf("Successfully produced messages to a topic called %s%n", TOPIC);
 
         //Shutdown hook to assure producer close
