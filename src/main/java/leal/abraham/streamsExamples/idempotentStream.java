@@ -39,7 +39,7 @@ public class idempotentStream {
         final KStream<String, String> input = builder.stream(TOPIC);
 
         //Build topology
-        final KStream<String, String> evaulateRecord = input.flatMapValues(value -> Arrays.asList(value.split("\\s+")));
+        final KStream<String, String> evaulateRecord = splitValueBySpace(input);
 
         evaulateRecord.print(Printed.toSysOut());
 
@@ -55,6 +55,10 @@ public class idempotentStream {
         }
 
         Runtime.getRuntime().addShutdownHook(new Thread(streams::close));
+    }
+
+    public static KStream<String, String> splitValueBySpace (KStream<String,String> sourceStream){
+        return sourceStream.flatMapValues(value -> Arrays.asList(value.split("\\s+")));
     }
 
 }
