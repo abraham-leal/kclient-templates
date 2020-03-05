@@ -3,7 +3,7 @@ package leal.abraham.interactiveQueries;
 // and a KStream containing more information (Key, name, country, value)
 // We will be joining by key to get both information together
 
-import leal.abraham.rmiInterface.RMIStreams;
+
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.StreamsBuilder;
