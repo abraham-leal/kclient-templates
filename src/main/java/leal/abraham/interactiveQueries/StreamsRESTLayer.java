@@ -40,7 +40,7 @@ public class StreamsRESTLayer {
 
         final ReadOnlyKeyValueStore<String,String> store = streams.store(KStreamInteractiveQueriesRemoteExample.storeToQuery, QueryableStoreTypes.keyValueStore());
 
-        return Long.toString(store.approximateNumEntries());
+        return store.get(key);
 
     }
 
