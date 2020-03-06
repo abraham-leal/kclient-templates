@@ -39,7 +39,7 @@ public class ProcessorAPIStream {
         // No need to specify Serdes as builder will get the default set in properties
         final KStream<String, String> input = builder.stream(TOPIC);
 
-        input.transform(hashCustInfo::new).print(Printed.toSysOut());
+        input.transform(hashCustInfo::new);
 
         final KafkaStreams streams = new KafkaStreams(builder.build(), getConfig());
 
