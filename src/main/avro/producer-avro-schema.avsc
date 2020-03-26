@@ -1,0 +1,12 @@
+
+{
+ "namespace": "examples",
+ "type": "record",
+ "name": "ExtraInfo",
+ "fields": [
+     {"name": "RandomID", "type": "int"},
+     {"name": "Name", "type": "string"},
+     {"name": "Favorite_Food", "type": "string"},
+     {"name": "Postal_Code", "type": "int"}
+ ]
+}

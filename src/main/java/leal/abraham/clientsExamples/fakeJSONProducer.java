@@ -10,12 +10,12 @@ import java.util.*;
 
 public class fakeJSONProducer {
 
-    private static final String TOPIC = "fakeJSONdata";
-    private static final int recordsToGenerate = 1000;
+    private static final String TOPIC = "testing-observers";
+    private static final int recordsToGenerate = 10000000;
 
     public static Properties getConfig (){
         final Properties props = new Properties();
-        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "");
         props.put(ProducerConfig.ACKS_CONFIG, "all");
         props.put(ProducerConfig.RETRIES_CONFIG, 5);
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
@@ -50,12 +50,6 @@ public class fakeJSONProducer {
                 //Sending records and displaying metadata with a non-blocking callback
                 //This allows to log/action on callbacks without a synchronous request
                 producer.send(record);
-
-                final ProducerRecord<String, String> record2 = new ProducerRecord<String, String>("fakeJSONref", k, Integer.toString(new Random().nextInt(100000000)));
-
-                //Sending records and displaying metadata with a non-blocking callback
-                //This allows to log/action on callbacks without a synchronous request
-                producer.send(record2);
 
             });
 

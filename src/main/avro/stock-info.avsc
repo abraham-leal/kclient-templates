@@ -1,0 +1,11 @@
+{
+ "namespace": "examples",
+ "type": "record",
+ "name": "StockInfo",
+ "fields": [
+    {"name":"Symbol", "type" : "string"},
+    {"name":"Name", "type" : "string"},
+    {"name":"Currency", "type" : "string"},
+    {"name":"Price", "type" : "string"}
+   ]
+}

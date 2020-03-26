@@ -7,32 +7,26 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.log4j.BasicConfigurator;
 
+import java.time.Duration;
 import java.util.Collections;
 import java.util.Properties;
 
 public class commonConsumer {
 
-    private static final String TOPIC = "TestingTopic";
+    private static final String TOPIC = "fake";
 
     public static Properties getConfig (){
         final Properties props = new Properties();
-        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, "TestingTopicGroup");
-        props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "true");
-        props.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG, "1000");
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "");
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, "TestingTopicGroup1");
+        props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "False");
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-
-        // Properties for auth-enabled cluster, SASL PLAIN
-
-        props.put("sasl.jaas.config", "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"test\" password=\"test123\";");
-        props.put("sasl.mechanism", "PLAIN");
-        props.put("security.protocol", "SASL_PLAINTEXT");
 
         return props;
     }
 
-    public static void main(final String[] args) {
+    public static void main(final String[] args) throws InterruptedException {
         BasicConfigurator.configure();
 
         final KafkaConsumer<String, String> consumer = new KafkaConsumer<String,String>(getConfig());
@@ -40,8 +34,11 @@ public class commonConsumer {
 
         try {
 
+            ConsumerRecords<String, String> records1 = consumer.poll(Duration.ofMillis(100));
+            consumer.seekToBeginning(consumer.assignment());
+
             while (true) {
-                ConsumerRecords<String, String> records = consumer.poll(100);
+                ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100));
                 for (final ConsumerRecord<String, String> record : records) {
                     final String key = record.key();
                     final String value = record.value();
