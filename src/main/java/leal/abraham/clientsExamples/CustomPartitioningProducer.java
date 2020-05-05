@@ -2,6 +2,7 @@ package leal.abraham.clientsExamples;
 
 import examples.ExtraInfo;
 import io.confluent.kafka.serializers.AbstractKafkaAvroSerDeConfig;
+import leal.abraham.partitioners.NamePartitioner;
 import org.apache.commons.lang3.SerializationException;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -13,8 +14,9 @@ import org.apache.log4j.Logger;
 
 import java.util.Properties;
 import java.util.Random;
+import java.util.UUID;
 
-public class fakeAVROProducerCCloud {
+public class CustomPartitioningProducer {
 
 
     private static final String TOPIC = "myinternaltopic";
@@ -23,7 +25,7 @@ public class fakeAVROProducerCCloud {
 
     public static Properties getConfig (){
         final Properties props = new Properties();
-        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "pkc-lgk0v.us-west1.gcp.confluent.cloud:9092");
+        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "<CCLOUD_DNS>");
         props.put(ProducerConfig.ACKS_CONFIG, "all");
         props.put(ProducerConfig.RETRIES_CONFIG, 5);
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
@@ -32,10 +34,11 @@ public class fakeAVROProducerCCloud {
         props.put(ProducerConfig.BATCH_SIZE_CONFIG, 5);
         props.put(ProducerConfig.LINGER_MS_CONFIG, 500);
         props.put(ProducerConfig.COMPRESSION_TYPE_CONFIG, "lz4");
+        props.put(ProducerConfig.PARTITIONER_CLASS_CONFIG, "leal.abraham.partitioners.NamePartitioner");
 
 
-        props.put(AbstractKafkaAvroSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG,"https://psrc-4r0k9.westus2.azure.confluent.cloud");
-        props.put(AbstractKafkaAvroSerDeConfig.USER_INFO_CONFIG,"WMBVSTKCTOZVARO4:IxtnHb5mSeGiZMbrw/lOYjHDidp6oeGAfpGbRjK5o6O9GdvBo9LwgTje8YzsbCu1");
+        props.put(AbstractKafkaAvroSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG,"<CCLOUD_SR_DNS>>");
+        props.put(AbstractKafkaAvroSerDeConfig.USER_INFO_CONFIG,"<SR_APIKEY>:<SR_API_SECRET>>");
         props.put(AbstractKafkaAvroSerDeConfig.BASIC_AUTH_CREDENTIALS_SOURCE,"USER_INFO");
 
 
@@ -43,8 +46,8 @@ public class fakeAVROProducerCCloud {
         props.put("sasl.mechanism","PLAIN");
         props.put("ssl.endpoint.identification.algorithm","https");
         props.put("sasl.jaas.config","org.apache.kafka.common.security.plain.PlainLoginModule " +
-                "required username=\"STSXDTE7WU7YGQFX\" " +
-                "password=\"5R+VgUtxOlsVv4/WN0V8lju9WE+7cpKnM+RPU3cOdbnwROYRMzsoENO+P3NZRrf0\";");
+                "required username=\"<CCLOUD_API_KEY>>\" " +
+                "password=\"<CCLOUD_API_SECRET>>\";");
 
 
 
@@ -61,7 +64,11 @@ public class fakeAVROProducerCCloud {
 
             for (int count = 0; count < recordsToGenerate; count++) {
                 final ExtraInfo recordValue = new ExtraInfo(getID(), getName(), getFood(), getPC(), "");
-                final ProducerRecord<String, ExtraInfo> record = new ProducerRecord<String, ExtraInfo>(TOPIC, null, recordValue);
+                final UUID key = UUID.randomUUID();
+                final ProducerRecord<String, ExtraInfo> record = new ProducerRecord<String, ExtraInfo>(TOPIC, key.toString(), recordValue);
+
+                // This is an example of adding a header to a record.
+                record.headers().add("Who is this?", recordValue.getName().toString().getBytes());
                 producer.send(record);
                 //Thread.sleep(1000L);
             }
