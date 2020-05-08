@@ -1,0 +1,10 @@
+{
+ "namespace": "examples",
+ "type": "record",
+ "name": "customerSubscription",
+ "fields": [
+    {"name":"Customer", "type" : "string"},
+    {"name":"Country", "type" : "string"},
+    {"name":"Subscription", "type" : "int"}
+   ]
+}

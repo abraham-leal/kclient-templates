@@ -7,6 +7,7 @@
      {"name": "RandomID", "type": "int"},
      {"name": "Name", "type": "string"},
      {"name": "Favorite_Food", "type": "string"},
-     {"name": "Postal_Code", "type": "int"}
+     {"name": "Postal_Code", "type": "int"},
+     {"name": "favorite_color", "type": "string", "default": "green"}
  ]
 }

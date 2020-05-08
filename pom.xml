@@ -41,7 +41,6 @@
             <artifactId>kafka-streams-test-utils</artifactId>
             <version>2.4.0</version>
         </dependency>
-
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
@@ -52,6 +51,12 @@
             <groupId>com.googlecode.json-simple</groupId>
             <artifactId>json-simple</artifactId>
             <version>1.1.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.confluent</groupId>
+            <artifactId>kafka-streams-avro-serde</artifactId>
+            <version>5.5.0</version>
         </dependency>
 
         <dependency>
@@ -142,6 +147,7 @@
                             <includes>
                                 <include>producer-avro-schema.avsc</include>
                                 <include>stock-info.avsc</include>
+                                <include>customerSubs.avsc</include>
                             </includes>
                             <outputDirectory>${project.build.directory}/generated-sources</outputDirectory>
                         </configuration>

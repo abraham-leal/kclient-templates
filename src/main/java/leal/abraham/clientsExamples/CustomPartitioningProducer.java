@@ -4,6 +4,7 @@ import examples.ExtraInfo;
 import io.confluent.kafka.serializers.AbstractKafkaAvroSerDeConfig;
 import leal.abraham.partitioners.NamePartitioner;
 import org.apache.commons.lang3.SerializationException;
+import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -12,6 +13,7 @@ import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
+import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
 import java.util.UUID;
@@ -37,8 +39,8 @@ public class CustomPartitioningProducer {
         props.put(ProducerConfig.PARTITIONER_CLASS_CONFIG, "leal.abraham.partitioners.NamePartitioner");
 
 
-        props.put(AbstractKafkaAvroSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG,"<CCLOUD_SR_DNS>>");
-        props.put(AbstractKafkaAvroSerDeConfig.USER_INFO_CONFIG,"<SR_APIKEY>:<SR_API_SECRET>>");
+        props.put(AbstractKafkaAvroSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG,"<CCLOUD_SR_DNS>");
+        props.put(AbstractKafkaAvroSerDeConfig.USER_INFO_CONFIG,"<SR_APIKEY>:<SR_API_SECRET>");
         props.put(AbstractKafkaAvroSerDeConfig.BASIC_AUTH_CREDENTIALS_SOURCE,"USER_INFO");
 
 
@@ -48,6 +50,8 @@ public class CustomPartitioningProducer {
         props.put("sasl.jaas.config","org.apache.kafka.common.security.plain.PlainLoginModule " +
                 "required username=\"<CCLOUD_API_KEY>>\" " +
                 "password=\"<CCLOUD_API_SECRET>>\";");
+
+        AdminClient x = AdminClient.create(props);
 
 
 
