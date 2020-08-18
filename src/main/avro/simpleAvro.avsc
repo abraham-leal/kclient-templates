@@ -1,0 +1,29 @@
+{
+    "namespace" : "examples",
+    "type" : "record",
+    "name" : "simpleAvroRecord",
+    "doc" : "A record defining a customer",
+    "fields" : [
+        {
+            "name" : "Country",
+            "type" : "string",
+            "default": "NoCustomerFound",
+            "doc" : "Country of customer. This field can be safely read by readers that recieve messages without it. AKA, adding this field to a writers schema is a BACKWARD compatible change."
+        },
+        {
+            "name" : "Subscription",
+            "type" : ["null", "int"],
+            "default" : null,
+            "doc" : "Subscription number of customer, this can be null if not a subscriber yet. This is an optional field. AKA, "
+        },
+        {
+            "name" : "typeOfCustomer",
+            "type" : {
+                    "type" : "enum",
+                    "symbols" : ["a","b","c"],
+                    "name" : "customerType"
+                },
+            "doc" : "This field will only accept values indicated in symbols"
+        }
+    ]
+}
