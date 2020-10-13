@@ -1,24 +1,17 @@
 package leal.abraham.SampleStreamsProcessors;
 
 import examples.reorderThis;
-import org.apache.kafka.common.serialization.Serdes;
-import org.apache.kafka.connect.transforms.Transformation;
 import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.kstream.Transformer;
 import org.apache.kafka.streams.kstream.TransformerSupplier;
 import org.apache.kafka.streams.processor.ProcessorContext;
 import org.apache.kafka.streams.processor.PunctuationType;
-import org.apache.kafka.streams.processor.To;
-import org.apache.kafka.streams.state.KeyValueIterator;
 import org.apache.kafka.streams.state.KeyValueStore;
-import org.apache.kafka.streams.state.StoreBuilder;
-import org.apache.kafka.streams.state.Stores;
 
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.Set;
+import java.util.Iterator;
 
 
 class reorderOnCustomField implements TransformerSupplier<String, reorderThis, KeyValue<String, reorderThis>> {
@@ -27,36 +20,39 @@ class reorderOnCustomField implements TransformerSupplier<String, reorderThis, K
         return new Transformer<String, reorderThis, KeyValue<String, reorderThis>>() {
             private ProcessorContext context;
             private KeyValueStore<String, reorderThis> aggregator;
+            private ArrayList<String> keyTracker;
 
 
             @Override
             @SuppressWarnings("unchecked")
             public void init(ProcessorContext context) {
+                // Retrieve the key-value store named "reorder" from the topology
+                this.aggregator = (KeyValueStore<String,reorderThis>) context.getStateStore("reorder");
+                // Get the current context
                 this.context = context;
+                // Track keys being registered in the underlying store
+                this.keyTracker = new ArrayList<>();
 
-
-                // retrieve the key-value store named "reorder"
-                aggregator = (KeyValueStore<String,reorderThis>) context.getStateStore("reorder");
-
-
-                // schedule a punctuate() method every minute based on stream-time
+                /*
+                 * Schedule a punctuate() method every minute based on wall-clock-time.
+                 * This will run according to the delay given and in accordance to poll() calls
+                 * It can also do a punctuation call in StreamTime, which does not advance unless new records are
+                 * present in source partitions
+                 */
                 this.context.schedule(Duration.ofSeconds(60), PunctuationType.WALL_CLOCK_TIME, (timestamp) -> {
-                    System.out.println("Punctuating w entry number: " + this.aggregator.approximateNumEntries() + " at " + System.currentTimeMillis());
-                    KeyValueIterator<String, reorderThis> iter = this.aggregator.all();
-                    ArrayList<String> sortedKeys = new ArrayList<String>();
-                    while (iter.hasNext()) {
-                        KeyValue<String, reorderThis> entry = iter.next();
-                        sortedKeys.add(entry.key);
-                    }
-                    iter.close();
+                    // Sort the keys received
+                    Collections.sort(keyTracker);
 
-                    Collections.sort(sortedKeys);
-
-                    for (String entryKey : sortedKeys) {
-                        reorderThis currentValue = aggregator.get(entryKey);
-                        System.out.println("Sending: " + entryKey + " " + currentValue.getName());
-                        context.forward(entryKey,currentValue);
-                        aggregator.delete(entryKey);
+                    Iterator<String> itr = keyTracker.iterator();
+                    while (itr.hasNext()) {
+                        String currentMod = itr.next();
+                        // Get an entry
+                        reorderThis currentValue = aggregator.get(currentMod);
+                        // Send entry forward into the topic
+                        context.forward(currentMod,currentValue);
+                        // Delete entry from persistent store and remove from keyTracker
+                        aggregator.delete(currentMod);
+                        itr.remove();
                     }
                     // commit the current processing progress
                     context.commit();
@@ -65,13 +61,17 @@ class reorderOnCustomField implements TransformerSupplier<String, reorderThis, K
 
             @Override
             public KeyValue<String, reorderThis> transform(String key, reorderThis value) {
-                System.out.println("Received: " + key + " " + value.getOrder().toString());
-                this.aggregator.put(value.getTransaction().toString()+"-"+value.getOrder().toString(),value);
+                // Establish a compound key on which to sort with
+                String compoundKey = value.getTransaction().toString()+"-"+value.getOrder().toString();
+                // Add the record to the underlying persistent store and our keyTracker
+                this.keyTracker.add(compoundKey);
+                this.aggregator.put(compoundKey,value);
+                // Return null, since we do not want to act upon the record immediately
                 return null;
             }
 
             @Override
-            public void close() {}
+            public void close() {} // Nothing to close
         };
     }
 

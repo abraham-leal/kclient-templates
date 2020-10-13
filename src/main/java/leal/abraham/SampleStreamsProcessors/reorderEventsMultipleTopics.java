@@ -67,7 +67,6 @@ public class reorderEventsMultipleTopics {
         final StreamsBuilder builder = new StreamsBuilder();
         ArrayList<String> topicsToReorder = new ArrayList<String>();
 
-
         // Set serde for our value
         final Serde<reorderThis> reorderSerde = new SpecificAvroSerde<>();
         Map<String, Object> SRconfig = new HashMap<>();
@@ -76,9 +75,9 @@ public class reorderEventsMultipleTopics {
                 SRconfig,
                 false);
 
-        // construct in-memory store
+        // construct in-memory store for persistence of state
         StoreBuilder<KeyValueStore<String,reorderThis>> myStore = Stores.keyValueStoreBuilder(
-                Stores.inMemoryKeyValueStore("reorder"),
+                Stores.persistentKeyValueStore("reorder"),
                 Serdes.String(),
                 reorderSerde);
 
@@ -87,7 +86,10 @@ public class reorderEventsMultipleTopics {
         topicsToReorder.add(TOPIC_B);
         topicsToReorder.add(TOPIC_C);
 
+        // Register the previously build state store with our topology
         // Set builder with right serdes
+        // Send the record through our transform code
+        // Send to topic
         builder.addStateStore(myStore).stream(topicsToReorder, Consumed.with(Serdes.String(),reorderSerde))
                 //reorder messages through processor API
                 .transform(new reorderOnCustomField(), "reorder")
@@ -95,8 +97,6 @@ public class reorderEventsMultipleTopics {
                 .to(DESTINATION, Produced.with(Serdes.String(),reorderSerde));
 
         final KafkaStreams streams = new KafkaStreams(builder.build(), getConfig());
-
-        System.out.println(builder.build().describe());
 
         try {
             streams.start();
