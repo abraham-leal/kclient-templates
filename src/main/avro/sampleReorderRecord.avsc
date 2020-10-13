@@ -1,0 +1,10 @@
+{
+ "namespace": "examples",
+ "type": "record",
+ "name": "reorderThis",
+ "fields": [
+    {"name":"Transaction", "type" : "string"},
+    {"name":"Order", "type" : "string"},
+    {"name":"Name", "type" : "string"}
+   ]
+}
