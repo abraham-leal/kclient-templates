@@ -33,15 +33,6 @@ class reorderOnCustomField implements TransformerSupplier<String, reorderThis, K
                 this.context = context;
                 // Track keys being registered in the underlying store
                 this.keyTracker = new ArrayList<>();
-                // Load entries from state store in case of fail over
-                if (this.aggregator.approximateNumEntries() > 0  && this.keyTracker.size() == 0){
-                    KeyValueIterator<String, reorderThis> iter = this.aggregator.all();
-                    while (iter.hasNext()) {
-                        KeyValue<String, reorderThis> entry = iter.next();
-                        this.keyTracker.add(entry.key);
-                    }
-                    iter.close();
-                }
 
                 /*
                  * Schedule a punctuate() method every minute based on wall-clock-time.
