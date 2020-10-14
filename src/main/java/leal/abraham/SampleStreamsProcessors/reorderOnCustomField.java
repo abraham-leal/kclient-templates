@@ -6,6 +6,7 @@ import org.apache.kafka.streams.kstream.Transformer;
 import org.apache.kafka.streams.kstream.TransformerSupplier;
 import org.apache.kafka.streams.processor.ProcessorContext;
 import org.apache.kafka.streams.processor.PunctuationType;
+import org.apache.kafka.streams.state.KeyValueIterator;
 import org.apache.kafka.streams.state.KeyValueStore;
 
 import java.time.Duration;
@@ -32,6 +33,15 @@ class reorderOnCustomField implements TransformerSupplier<String, reorderThis, K
                 this.context = context;
                 // Track keys being registered in the underlying store
                 this.keyTracker = new ArrayList<>();
+                // Load entries from state store in case of fail over
+                if (this.aggregator.approximateNumEntries() > 0  && this.keyTracker.size() == 0){
+                    KeyValueIterator<String, reorderThis> iter = this.aggregator.all();
+                    while (iter.hasNext()) {
+                        KeyValue<String, reorderThis> entry = iter.next();
+                        this.keyTracker.add(entry.key);
+                    }
+                    iter.close();
+                }
 
                 /*
                  * Schedule a punctuate() method every minute based on wall-clock-time.
